@@ -175,6 +175,7 @@ generic_extractors = {
         "compute": compute_mcnf_base_features,
     },
     "mopbbase": {
+        "description": "Extract base features from multi-objective OPB files. ",
         "contexts": ["mopb"],
         "features": [(name, "empty") for name in mopb_base_feature_names()],
         "compute": compute_mopb_base_features,
