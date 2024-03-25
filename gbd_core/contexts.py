@@ -60,6 +60,12 @@ context_data = {
         "description" : "Multi-objective MaxSAT instances in MCNF format",
         "suffixes" : [ ".mcnf" + p for p in packed ],
         "hash": mcnf_hash,
+    },
+    "mopb"  : {
+        "id" : 700,
+        "description" : "Multi-objective pseudo-Boolean instances in OPB format",
+        "suffixes" : [ ".mopb" + p for p in packed ],
+        "hash": opb_hash,
     }
 }
 

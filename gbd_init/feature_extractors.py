@@ -23,7 +23,7 @@ from gbd_core.util import eprint, confirm
 from gbd_init.initializer import Initializer, InitializerException
 
 try:
-    from gbdc import extract_base_features, base_feature_names, extract_gate_features, gate_feature_names, isohash, wcnfisohash, wcnf_base_feature_names, extract_wcnf_base_features, opb_base_feature_names, extract_opb_base_features, mcnfisohash, mcnf_base_feature_names, extract_mcnf_base_features
+    from gbdc import extract_base_features, base_feature_names, extract_gate_features, gate_feature_names, isohash, wcnfisohash, wcnf_base_feature_names, extract_wcnf_base_features, opb_base_feature_names, extract_opb_base_features, mcnfisohash, mcnf_base_feature_names, extract_mcnf_base_features, mopb_base_feature_names, extract_mopb_base_features
 except ImportError:
     def extract_base_features(path, tlim, mlim):
         raise ModuleNotFoundError("gbdc not found", name="gbdc")
@@ -59,6 +59,12 @@ except ImportError:
         raise ModuleNotFoundError("gbdc not found", name="gbdc")
 
     def mcnf_base_feature_names():
+        return []
+
+    def extract_mopb_base_features(path, tlim, mlim):
+        raise ModuleNotFoundError("gbdc not found", name="gbdc")
+
+    def mopb_base_feature_names():
         return []
 
 
@@ -122,6 +128,14 @@ def compute_mcnf_base_features(hash, path, limits):
     rec = extract_mcnf_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
 
+# MOPB Base Features
+
+
+def compute_mopb_base_features(hash, path, limits):
+    eprint('Extracting MCNF base features from {} {}'.format(hash, path))
+    rec = extract_mopb_base_features(path, limits['tlim'], limits['mlim'])
+    return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
+
 
 generic_extractors = {
     "base": {
@@ -158,6 +172,11 @@ generic_extractors = {
         "contexts": ["mcnf"],
         "features": [(name, "empty") for name in mcnf_base_feature_names()],
         "compute": compute_mcnf_base_features,
+    },
+    "mopbbase": {
+        "contexts": ["mopb"],
+        "features": [(name, "empty") for name in mopb_base_feature_names()],
+        "compute": compute_mopb_base_features,
     }
 }
 
@@ -198,4 +217,3 @@ def init_local(api: GBD, rlimits, root, target_db):
     )], columns=["hash", "local"])
 
     extractor.run(df2)
-
