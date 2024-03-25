@@ -13,7 +13,7 @@
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
 
-from gbd_init.gbdhash import cnf_hash, opb_hash, wcnf_hash
+from gbd_init.gbdhash import cnf_hash, opb_hash, wcnf_hash, mcnf_hash
 
 
 packed = [ "", ".gz", ".lzma", ".xz", ".bz2" ]
@@ -54,6 +54,12 @@ context_data = {
         "description" : "MaxSAT instances in WCNF format",
         "suffixes" : [ ".wcnf" + p for p in packed ],
         "hash": wcnf_hash,
+    },
+    "mcnf"  : {
+        "id" : 600,
+        "description" : "Multi-objective MaxSAT instances in MCNF format",
+        "suffixes" : [ ".mcnf" + p for p in packed ],
+        "hash": mcnf_hash,
     }
 }
 

@@ -82,3 +82,10 @@ try:
 except ImportError:
     def wcnf_hash(filename):
         raise Exception("Unable to import wcnfhash. Please install or update gbdc: https://github.com/Udopia/gbdc")
+
+
+try:
+    from gbdc import mcnfhash as mcnf_hash
+except ImportError:
+    def mcnf_hash(filename):
+        raise Exception("Unable to import mcnfhash. Please install or update gbdc: https://github.com/Udopia/gbdc")
