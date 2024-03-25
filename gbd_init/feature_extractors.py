@@ -169,6 +169,7 @@ generic_extractors = {
         "compute": compute_opb_base_features,
     },
     "mcnfbase": {
+        "description": "Extract base features from MCNF files. ",
         "contexts": ["mcnf"],
         "features": [(name, "empty") for name in mcnf_base_feature_names()],
         "compute": compute_mcnf_base_features,
