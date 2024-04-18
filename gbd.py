@@ -17,6 +17,7 @@
 import os
 import sys
 import traceback
+import shutil
 
 from gbd_core.api import GBD, GBDException
 from gbd_core.grammar import ParserException
@@ -105,11 +106,23 @@ def cli_info(api: GBD, args):
                 print("## " + api.get_database_path(dbname))
                 print(" - Name: " + dbname)
                 feat = api.get_features(dbname)
-                print(" - Features: " + " ".join(feat))
+                print(" - Features:")
                 if args.verbose:
                     for f in feat:
                         info = api.database.find(":".join([ dbname, f ]))
-                        print(info)
+                        print("   - {} ({})".format(f, info))
+                else:
+                    twidth = shutil.get_terminal_size((80, 20)).columns
+                    width = twidth - 4
+                    maxlen = max(len(f) for f in feat)
+                    cols = int(width / (maxlen + 3))
+                    fmt_str = "- {{:<{}}} ".format(maxlen)
+                    for i in range(len(feat)):
+                        if i % cols == 0:
+                            print("    ", end='')
+                        print(fmt_str.format(feat[i]), end='')
+                        if i % cols == cols - 1 or i == len(feat) - 1:
+                            print()
     else:
         info = api.get_feature_info(args.name)
         for key in info:
