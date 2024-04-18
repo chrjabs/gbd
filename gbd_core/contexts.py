@@ -64,7 +64,7 @@ context_data = {
     "mopb"  : {
         "id" : 700,
         "description" : "Multi-objective pseudo-Boolean instances in OPB format",
-        "suffixes" : [ ".mopb" + p for p in packed ],
+        "suffixes" : [ ".mopb" + p for p in packed ] + [ ".pbmo" + p for p in packed ],
         "hash": opb_hash,
     }
 }
