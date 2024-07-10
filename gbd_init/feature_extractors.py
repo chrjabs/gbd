@@ -143,6 +143,7 @@ generic_extractors = {
         "contexts": ["cnf"],
         "features": [(name, "empty") for name in base_feature_names()],
         "compute": compute_base_features,
+        "haspool" : True,
     },
     "gate": {
         "description": "Extract gate features from CNF files. ",
@@ -187,10 +188,8 @@ def init_features_generic(key: str, api: GBD, rlimits, df, target_db):
     einfo = generic_extractors[key]
     context = api.database.dcontext(target_db)
     if not context in einfo["contexts"]:
-        raise InitializerException(
-            "Target database context must be in {}".format(einfo["contexts"]))
-    extractor = Initializer(api, rlimits, target_db,
-                            einfo["features"], einfo["compute"])
+        raise InitializerException("Target database context must be in {}".format(einfo["contexts"]))
+    extractor = Initializer(api, rlimits, target_db, einfo["features"], einfo["compute"], einfo["haspool"] if "haspool" in einfo else False)
     extractor.create_features()
     extractor.run(df)
 
