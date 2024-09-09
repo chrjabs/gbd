@@ -27,6 +27,7 @@ from gbd_core.database import DatabaseException
 from gbd_core.api import GBD, GBDException
 from gbd_core.grammar import ParserException
 from gbd_core.util import is_number
+from gbd_core import contexts
 
 app = flask.Flask(__name__)
 
@@ -56,7 +57,7 @@ def request_action(request):
     return request.values.get('action') if "action" in request.values else "default"
 
 def request_context(request):
-    return request.values.get('context') if "context" in request.values else "cnf"
+    return request.values.get('context') if "context" in request.values else contexts.default_context()
 
 
 def query_to_name(query):
@@ -103,7 +104,7 @@ def page_response(context, query, database, page=0):
             result=df.iloc[start:end, :].values.tolist() if error is None else [], 
             total=len(df.index) if error is None else 0,
             page=page,
-            pages=int(len(df.index) / 1000) if error is None else 0,
+            pages=int(len(df.index) / 1000)+1 if error is None else 0,
             selected=database, 
             features=app.config["features"][database],
             databases=[ gbd.get_database_name(db) for db in app.config["contextdbs"][context] ],

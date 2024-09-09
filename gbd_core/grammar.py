@@ -42,6 +42,7 @@ class Parser:
         constraint 
             = 
             | col:(dbname ":" column | column) cop:("=" | "!=" | "<=" | ">=" | "<" | ">" ) ter:termstart
+            | col:(dbname ":" column | column) cop:("=" | "!=" | "<=" | ">=" | "<" | ">" ) num:number 
             | col:(dbname ":" column | column) cop:("=" | "!=" | "<=" | ">=" | "<" | ">" ) str:string 
             | col:(dbname ":" column | column) cop:("like" | "unlike") ~ lik:(["%"] string ["%"])
             ;
@@ -136,6 +137,12 @@ class Parser:
                         return "{t}.hash {o} (SELECT {t}.hash FROM {t} WHERE {f} = '{s}')".format(o=setop, t=table, f=feat, s=ast["str"])
                     else:
                         return "{} {} '{}'".format(feat, operator, ast["str"])
+                elif "num" in ast: # cop:("=" | "!=" | "<=" | ">=" | "<" | ">" )
+                    if feat_is_1_n:
+                        table = db.faddr_table("".join(ast["col"]))
+                        return "{t}.hash IN (SELECT {t}.hash FROM {t} WHERE CAST({f} AS FLOAT) {o} {s})".format(o=operator, t=table, f=feat, s=ast["num"])
+                    else:
+                        return "CAST({} AS FLOAT) {} {}".format(feat, operator, ast["num"])
                 elif "lik" in ast: # cop:("like" | "unlike")
                     if feat_is_1_n:
                         table = db.faddr_table("".join(ast["col"]))
