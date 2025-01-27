@@ -88,7 +88,7 @@ def cli_get(api: GBD, args):
 def cli_interactive(api: GBD, args):
     data = api.query(args.query, args.hashes, args.resolve, args.collapse, args.group_by, args.join_type)
     import IPython
-    IPython.embed(header ="GBD data is available as `data`")
+    IPython.embed(header ="GBD data is available as `data`", colors="neutral")
 
 def cli_set(api: GBD, args):
     hashes = api.query(args.query, args.hashes)['hash'].tolist()
