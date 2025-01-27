@@ -24,7 +24,6 @@ from gbd_core.util import eprint, confirm
 from gbd_init.initializer import Initializer, InitializerException
 
 gbdc_available = True
-tp_available = True
 try:
     from gbdc import extract_base_features, base_feature_names, extract_gate_features, gate_feature_names, isohash, wcnfisohash, wcnf_base_feature_names, extract_wcnf_base_features, opb_base_feature_names, extract_opb_base_features, mcnfisohash, mcnf_base_feature_names, extract_mcnf_base_features, mopb_base_feature_names, extract_mopb_base_features
 except ImportError:
@@ -72,28 +71,7 @@ except ImportError:
     def mopb_base_feature_names():
         return []
 
-try:
-    from gbdc import tp_extract_base_features, tp_extract_gate_features, tp_extract_wcnf_base_features, tp_extract_opb_base_features
-except ImportError:
-    tp_available = False
-    msg = "Older version of gbdc found, please update." if gbdc_available else "gbdc not found"
-    if gbdc_available:
-        warnings.warn(msg)
-
-    def tp_extract_base_features(x, y, z):
-        raise ModuleNotFoundError(msg, name="gbdc")
-
-    def tp_extract_gate_features(x, y, z):
-        raise ModuleNotFoundError(msg, name="gbdc")
-
-    def tp_extract_wcnf_base_features(x, y, z):
-        raise ModuleNotFoundError(msg, name="gbdc")
-
-    def tp_extract_opb_base_features(x, y, z):
-        raise ModuleNotFoundError(msg, name="gbdc")
-
-
-# GBDHash
+## GBDHash
 def compute_hash(hash, path, limits):
     eprint('Hashing {}'.format(path))
     hash = identify(path)
@@ -116,7 +94,8 @@ def compute_isohash(hash, path, limits):
 # Base Features
 
 
-def compute_base_features(hash, path, limits):
+## Base Features
+def compute_base_features(hash, path, limits, tp=None):
     eprint('Extracting base features from {} {}'.format(hash, path))
     rec = extract_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
@@ -124,7 +103,8 @@ def compute_base_features(hash, path, limits):
 # Gate Features
 
 
-def compute_gate_features(hash, path, limits):
+## Gate Features
+def compute_gate_features(hash, path, limits, tp=None):
     eprint('Extracting gate features from {} {}'.format(hash, path))
     rec = extract_gate_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
@@ -132,7 +112,8 @@ def compute_gate_features(hash, path, limits):
 # WCNF Base Features
 
 
-def compute_wcnf_base_features(hash, path, limits):
+## WCNF Base Features
+def compute_wcnf_base_features(hash, path, limits, tp=None):
     eprint('Extracting WCNF base features from {} {}'.format(hash, path))
     rec = extract_wcnf_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
@@ -140,7 +121,8 @@ def compute_wcnf_base_features(hash, path, limits):
 # OPB Base Features
 
 
-def compute_opb_base_features(hash, path, limits):
+## OPB Base Features
+def compute_opb_base_features(hash, path, limits, tp=None):
     eprint('Extracting OPB base features from {} {}'.format(hash, path))
     rec = extract_opb_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
@@ -148,7 +130,7 @@ def compute_opb_base_features(hash, path, limits):
 # MCNF Base Features
 
 
-def compute_mcnf_base_features(hash, path, limits):
+def compute_mcnf_base_features(hash, path, limits, tp=None):
     eprint('Extracting MCNF base features from {} {}'.format(hash, path))
     rec = extract_mcnf_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
@@ -156,96 +138,54 @@ def compute_mcnf_base_features(hash, path, limits):
 # MOPB Base Features
 
 
-def compute_mopb_base_features(hash, path, limits):
+def compute_mopb_base_features(hash, path, limits, tp=None):
     eprint('Extracting MCNF base features from {} {}'.format(hash, path))
     rec = extract_mopb_base_features(path, limits['tlim'], limits['mlim'])
     return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in rec.items()]
 
 
 generic_extractors = {
-    "base": {
-        "description": "Extract base features from CNF files. ",
-        "contexts": ["cnf"],
-        "features": [(name, "empty") for name in base_feature_names()],
-        "compute": compute_base_features,
-        "haspool" : True,
-    },
-    "gate": {
-        "description": "Extract gate features from CNF files. ",
-        "contexts": ["cnf"],
-        "features": [(name, "empty") for name in gate_feature_names()],
-        "compute": compute_gate_features,
-    },
-    "isohash": {
-        "description": "Compute ISOHash for CNF or WCNF files. ",
-        "contexts": ["cnf", "wcnf", "mcnf"],
-        "features": [("isohash", "empty")],
-        "compute": compute_isohash,
-    },
-    "wcnfbase": {
-        "description": "Extract base features from WCNF files. ",
-        "contexts": ["wcnf"],
-        "features": [(name, "empty") for name in wcnf_base_feature_names()],
-        "compute": compute_wcnf_base_features,
-    },
-    "opbbase": {
-        "description": "Extract base features from OPB files. ",
-        "contexts": ["opb"],
-        "features": [(name, "empty") for name in opb_base_feature_names()],
-        "compute": compute_opb_base_features,
-    },
     "base" : {
         "description" : "Extract base features from CNF files. ",
         "contexts" : [ "cnf" ],
         "features" : [ (name, "empty") for name in base_feature_names() ],
         "compute" : compute_base_features,
-        "threadpool" : tp_extract_base_features,
-        "usepool" : False
     },
     "gate" : {
         "description" : "Extract gate features from CNF files. ",
         "contexts" : [ "cnf" ],
         "features" : [ (name, "empty") for name in gate_feature_names() ],
         "compute" : compute_gate_features,
-        "threadpool" : tp_extract_gate_features,
-        "usepool" : False
     },
     "isohash" : {
         "description" : "Compute ISOHash for CNF or WCNF files. ",
         "contexts" : [ "cnf", "wcnf" ],
         "features" : [ ("isohash", "empty") ],
         "compute" : compute_isohash,
-        "usepool" : False
     },
     "wcnfbase" : {
         "description" : "Extract base features from WCNF files. ",
         "contexts" : [ "wcnf" ],
         "features" : [ (name, "empty") for name in wcnf_base_feature_names() ],
         "compute" : compute_wcnf_base_features,
-        "threadpool" : tp_extract_wcnf_base_features,
-        "usepool" : False
     },
     "opbbase" : {
         "description" : "Extract base features from OPB files. ",
         "contexts" : [ "opb" ],
         "features" : [ (name, "empty") for name in opb_base_feature_names() ],
         "compute" : compute_opb_base_features,
-        "threadpool" : tp_extract_opb_base_features,
-        "usepool" : False
-    }
+    },
     "mcnfbase": {
         "description": "Extract base features from MCNF files. ",
         "contexts": ["mcnf"],
         "features": [(name, "empty") for name in mcnf_base_feature_names()],
         "compute": compute_mcnf_base_features,
-        "usepool" : False
     },
     "mopbbase": {
         "description": "Extract base features from multi-objective OPB files. ",
         "contexts": ["mopb"],
         "features": [(name, "empty") for name in mopb_base_feature_names()],
         "compute": compute_mopb_base_features,
-        "usepool" : False
     }
 }
 
@@ -255,9 +195,7 @@ def init_features_generic(key: str, api: GBD, rlimits, df, target_db):
     context = api.database.dcontext(target_db)
     if not context in einfo["contexts"]:
         raise InitializerException("Target database context must be in {}".format(einfo["contexts"]))
-    use_pool = "usepool" in einfo and einfo["usepool"] and tp_available
-    initfunc = einfo["threadpool"] if use_pool else einfo["compute"]
-    extractor = Initializer(api, rlimits, target_db, einfo["features"], initfunc, use_pool)
+    extractor = Initializer(api, rlimits, target_db, einfo["features"], einfo["compute"])
     extractor.create_features()
     extractor.run(df)
 
@@ -266,7 +204,7 @@ def init_local(api: GBD, rlimits, root, target_db):
     context = api.database.dcontext(target_db)
     
     features = [ ("local", None), ("filename", None) ]
-    extractor = Initializer(api, rlimits, target_db, features, compute_hash, False)
+    extractor = Initializer(api, rlimits, target_db, features, compute_hash)
     extractor.create_features()
 
     # Cleanup stale entries

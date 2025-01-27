@@ -19,30 +19,29 @@ import pebble
 from concurrent.futures import as_completed
 import pandas as pd
 
+from gbd_core.util import eprint
 from gbd_core.api import GBD, GBDException
 from gbd_core import util
+import gbdc
 import os
-
-def prep_data(rec, hash):
-    print('Extracting features from {}'.format(hash))
-    return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in
-            rec.items()]
-
 
 class InitializerException(Exception):
     pass
 
 class Initializer:
 
-    def __init__(self, api: GBD, rlimits: dict, target_db: str, features: list, initfunc, usepool=False):
+    def __init__(self, api: GBD, rlimits: dict, target_db: str, features: list, initfunc):
         self.api = api
         self.api.database.set_auto_commit(False)
         self.target_db = target_db
         self.features = features
         self.initfunc = initfunc
         self.rlimits = rlimits
-        self.usepool = usepool
 
+    def prep_data(self, rec, hash):
+        return [(key, hash, int(value) if isinstance(value, float) and value.is_integer() else value) for key, value in
+                rec.items() if self.api.feature_exists(key)]
+    
 
     def create_features(self):
         for (name, default) in self.features:
@@ -60,35 +59,13 @@ class Initializer:
     def run(self, instances: pd.DataFrame):
         if self.rlimits['jobs'] == 1:
             self.init_sequential(instances)
-        elif self.usepool:
-            self.init_parallel_tp(instances)
         else:
             self.init_parallel_pp(instances)
 
     def init_sequential(self, instances: pd.DataFrame):
-        for idx, row in instances.iterrows():
+        for _, row in instances.iterrows():
             result = self.initfunc(row['hash'], row['local'], self.rlimits)
             self.save_features(result)
-
-
-    def init_parallel_tp(self, instances: pd.DataFrame):
-        args = {row['local']: row['hash'] for idx, row in instances.iterrows() if row['local'] != 'None'}
-        paths = [(key,) for key in args.keys()]
-        q = self.initfunc(self.rlimits['mlim']*int(1e6), self.rlimits['jobs'], paths)
-        while not q.done():
-            if not q.empty():
-                result = q.pop()
-                rec = result[0]
-                success = result[1]
-                path = result[2]
-                hash = args[path]
-                # if computation successful
-                if not success:
-                    print('Failed to extract features from {}'.format(path))
-                data = prep_data(rec, hash)
-                self.save_features(data)
-            else:
-                time.sleep(0.5)
 
     def init_parallel_pp(self, instances: pd.DataFrame):
         with pebble.ProcessPool(max_workers=self.rlimits['jobs'], max_tasks=1, context=multiprocessing.get_context('forkserver')) as p:
