@@ -87,6 +87,10 @@ def cli_get(api: GBD, args):
 
 def cli_interactive(api: GBD, args):
     data = api.query(args.query, args.hashes, args.resolve, args.collapse, args.group_by, args.join_type)
+    if args.group_by:
+        data.set_index(args.group_by, inplace=True)
+    else:
+        data.set_index('hash', inplace=True)
     import IPython
     IPython.embed(header ="GBD data is available as `data`", colors="neutral")
 
