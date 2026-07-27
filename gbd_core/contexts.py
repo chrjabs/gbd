@@ -12,7 +12,7 @@
 # The above copyright notice and this permission notice shall be included in all
 # copies or substantial portions of the Software.
 
-from gbd_init.gbdhash import cnf_hash, opb_hash, wcnf_hash
+from gbd_init.gbdhash import cnf_hash, opb_hash, wcnf_hash, mcnf_hash
 from gbd_core import config as _config
 
 ### Registry of known identifier (hash) functions, keyed by their config name
@@ -20,6 +20,7 @@ _IDFUNCS = {
     "cnf_hash": cnf_hash,
     "opb_hash": opb_hash,
     "wcnf_hash": wcnf_hash,
+    "mcnf_hash": mcnf_hash,
 }
 
 ### Default Context and Available Contexts (populated from configuration)
